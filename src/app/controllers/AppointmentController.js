@@ -54,7 +54,16 @@ class AppointmentController {
       });
 
     if (!isProvider) {
-      return res.status(401).json({error: 'You can only create appointments with providers' });
+      return res.status(401).json({ error: 'You can only create appointments with providers' });
+    }
+
+    // Verificar se o usuário está fazendo um agendamento para ele mesmo
+    const isSameUser = await Appointment.findOne({
+      where: { provider_id: req.userId }
+    });
+
+    if (isSameUser) {
+      return res.status(400).json({ error: 'You can not create appointments for yourself' });
     }
 
     // Verificar se a data de agendamento é uma data passada
