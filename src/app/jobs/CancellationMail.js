@@ -22,7 +22,7 @@ class CancellationMail {
               date: format(
                 parseISO(appointment.date),
                 "dd 'de' MMMM, 'às' HH:mm'h'",
-                { locale: pt }
+                { locale: pt },
               )
             }
         });
