@@ -1,47 +1,45 @@
-'use strict';
-
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.createTable('appointments', {
-       id: {
+      id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         autoIncrement: true,
-        primaryKey: true
-       },
-       date: {
+        primaryKey: true,
+      },
+      date: {
         type: Sequelize.DATE,
-        allowNull: false
-       },
-       user_id: {
+        allowNull: false,
+      },
+      user_id: {
         type: Sequelize.INTEGER,
         references: { model: 'users', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
-        allowNull: true
-       },
-       provider_id: {
+        allowNull: true,
+      },
+      provider_id: {
         type: Sequelize.INTEGER,
         references: { model: 'users', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
-        allowNull: true
-       },
-       cancelled_at: {
+        allowNull: true,
+      },
+      cancelled_at: {
         type: Sequelize.DATE,
-       },
-       created_at: {
+      },
+      created_at: {
         type: Sequelize.DATE,
-        allowNull: false
-       },
-       updated_at: {
+        allowNull: false,
+      },
+      updated_at: {
         type: Sequelize.DATE,
-        allowNull: false
-       }
-      });
+        allowNull: false,
+      },
+    });
   },
 
-  down: (queryInterface) => {
+  down: queryInterface => {
     return queryInterface.dropTable('appointments');
-  }
+  },
 };

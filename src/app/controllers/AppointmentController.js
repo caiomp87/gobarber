@@ -28,11 +28,11 @@ class AppointmentController {
             {
               model: File,
               as: 'avatar',
-              attributes: ['url', 'path']
-            }
-          ]
-        }
-      ]
+              attributes: ['url', 'path'],
+            },
+          ],
+        },
+      ],
     });
 
     return res.json(appointments);
@@ -41,7 +41,7 @@ class AppointmentController {
   async store(req, res) {
     const schema = Yup.object().shape({
       date: Yup.date().required(),
-      provider_id: Yup.number().required()
+      provider_id: Yup.number().required(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -53,20 +53,26 @@ class AppointmentController {
     // Verificar se o agendamento está sendo feito para um prestador
     const isProvider = await User.findOne({
       where: {
-        id: provider_id, provider: true }
-      });
+        id: provider_id,
+        provider: true,
+      },
+    });
 
     if (!isProvider) {
-      return res.status(401).json({ error: 'You can only create appointments with providers' });
+      return res
+        .status(401)
+        .json({ error: 'You can only create appointments with providers' });
     }
 
     // Verificar se o usuário está fazendo um agendamento para ele mesmo
     const isSameUser = await Appointment.findOne({
-      where: { provider_id: req.userId }
+      where: { provider_id: req.userId },
     });
 
     if (isSameUser) {
-      return res.status(400).json({ error: 'You can not create appointments for yourself' });
+      return res
+        .status(400)
+        .json({ error: 'You can not create appointments for yourself' });
     }
 
     // Verificar se a data de agendamento é uma data passada
@@ -81,21 +87,21 @@ class AppointmentController {
       where: {
         provider_id,
         date: hourStart,
-        cancelled_at: null
-      }
+        cancelled_at: null,
+      },
     });
 
     if (notAvailable) {
-      return res.status(400).json({ error: 'Appointment dote is not available' });
+      return res
+        .status(400)
+        .json({ error: 'Appointment dote is not available' });
     }
 
     // Criar a notificação para o prestador de serviço
     const user = await User.findByPk(req.userId);
-    const formattedDate = format(
-      hourStart,
-      "dd 'de' MMMM, 'às' HH:mm'h'",
-      { locale: pt }
-    );
+    const formattedDate = format(hourStart, "dd 'de' MMMM, 'às' HH:mm'h'", {
+      locale: pt,
+    });
 
     await Notification.create({
       content: `Novo agendamento de ${user.name} para dia ${formattedDate}`,
@@ -105,7 +111,7 @@ class AppointmentController {
     const appointment = await Appointment.create({
       user_id: req.userId,
       provider_id,
-      date: hourStart
+      date: hourStart,
     });
 
     return res.json(appointment);
@@ -117,32 +123,36 @@ class AppointmentController {
         {
           model: User,
           as: 'provider',
-          attributes: ['name', 'email']
+          attributes: ['name', 'email'],
         },
         {
           model: User,
           as: 'user',
-          attributes: ['name']
-        }
-      ]
+          attributes: ['name'],
+        },
+      ],
     });
 
     if (appointment.user_id !== req.userId) {
-      return res.status(401).json({ error: "You don't hava permission to cancel this appointment." });
+      return res.status(401).json({
+        error: "You don't hava permission to cancel this appointment.",
+      });
     }
 
     const dateWithSub = subHours(appointment.date, 2);
 
-    if(isBefore(dateWithSub, new Date())) {
-      return res.status(401).json({ error: 'You can only cancel appointments 2 hours in advance.' })
+    if (isBefore(dateWithSub, new Date())) {
+      return res.status(401).json({
+        error: 'You can only cancel appointments 2 hours in advance.',
+      });
     }
 
     appointment.cancelled_at = new Date();
     await appointment.save();
 
     await Queue.add(CancellationMail.key, {
-      appointment
-    })
+      appointment,
+    });
 
     return res.json(appointment);
   }

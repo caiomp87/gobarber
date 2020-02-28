@@ -6,12 +6,14 @@ import authConfig from '../../config/auth';
 class SessionController {
   async store(req, res) {
     const schema = Yup.object().shape({
-      email: Yup.string().email().required(),
+      email: Yup.string()
+        .email()
+        .required(),
       password: Yup.string().required(),
     });
 
     if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({error: 'Validation fails'});
+      return res.status(400).json({ error: 'Validation fails' });
     }
 
     const { email, password } = req.body;
@@ -32,11 +34,11 @@ class SessionController {
       user: {
         id,
         name,
-        email
+        email,
       },
       token: jwt.sign({ id }, authConfig.secret, {
-        expiresIn: authConfig.expiresIn
-      })
+        expiresIn: authConfig.expiresIn,
+      }),
     });
   }
 }
